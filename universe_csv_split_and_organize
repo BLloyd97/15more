@@ -73,6 +73,6 @@ split_and_organize_csv(input_file_path, output_folder)
 
 
 # Run generate_file_tracker
-output_folder = r"C:\Users\brian\Documents\dpnm\15more\organized_files"
 tracker_file_path = r"C:\Users\brian\Documents\dpnm\15more\file_tracker.csv"
 generate_file_tracker(output_folder, tracker_file_path)
+
