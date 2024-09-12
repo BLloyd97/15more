@@ -1,4 +1,5 @@
 Voter List Organization and Tracking Tool
+
 This tool helps campaign data managers split a master CSV file containing a universe into smaller, organized files and generates a summary 'tracker' file. It is designed to distribute lists of voters to volunteers for a letter-writing campaign or other personalized contact.
 
 Quick Start Guide
