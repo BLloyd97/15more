@@ -1,0 +1,78 @@
+import pandas as pd
+import os
+import re
+
+def split_and_organize_csv(input_file_path, output_folder, rows_per_file=15):
+    os.makedirs(output_folder, exist_ok=True)
+    df = pd.read_csv(input_file_path)
+    df = df.sort_values(by=['CD', 'CountyName', 'LastName'])
+
+    file_counter = 1  # Overall rank of all files
+
+    # Group by both CD and CountyName
+    for (cd, county), county_cd_df in df.groupby(['CD', 'CountyName']):
+        subfile_counter = 1  # Reset file counter for each CD and CountyName combination
+
+        # Create directory structure for each CD and County
+        cd_folder = os.path.join(output_folder, f"CD_{cd}")
+        county_folder = os.path.join(cd_folder, f"County_{county}")
+        os.makedirs(county_folder, exist_ok=True)
+
+        # Split the county_cd_df data into chunks
+        for i in range(0, len(county_cd_df), rows_per_file):
+            # Get the subset of the DataFrame for this chunk
+            df_subset = county_cd_df.iloc[i:i + rows_per_file]
+
+            # Define the output CSV file path within the appropriate county folder
+            output_file_name = (f"file_{file_counter:04d}_subfile_{subfile_counter:03d}"
+                                f"_CD_{cd}_County_{county}.csv")
+            output_file_path = os.path.join(county_folder, output_file_name)
+
+            # Write the subset to a new CSV file, including the header
+            df_subset.to_csv(output_file_path, index=False)
+            print(f"Created: {output_file_path}")
+
+            # Increment counters
+            subfile_counter += 1
+            file_counter += 1  
+
+def generate_file_tracker(output_folder, tracker_file_path):
+    # List to store file information
+    file_info = []
+
+    # Extract file details
+    pattern = re.compile(r'file_(\d{4})_subfile_(\d{3})_CD_(\d+)_County_(.+)\.csv')
+
+    # Walk through all files and subfolders within the output folder
+    for root, dirs, files in os.walk(output_folder):
+        for file_name in files:
+            match = pattern.match(file_name)
+            if match:
+                file_number, subfile_number, cd, county = match.groups()
+                file_info.append({
+                    'File Name': file_name,
+                    'File Number': int(file_number),
+                    'Subfile Number': int(subfile_number),
+                    'CD': cd,
+                    'County': county
+                })
+
+    # Create a DataFrame from the collected file information
+    df_tracker = pd.DataFrame(file_info)
+
+    # Save the DataFrame to a CSV file
+    df_tracker.to_csv(tracker_file_path, index=False)
+    print(f"Tracker file created: {tracker_file_path}")
+
+
+
+# Run split_and_organize_csv
+input_file_path = r"C:\Users\brian\Documents\dpnm\15more\15more_universe_export.csv"
+output_folder = r"C:\Users\brian\Documents\dpnm\15more\organized_files"
+split_and_organize_csv(input_file_path, output_folder)
+
+
+# Run generate_file_tracker
+output_folder = r"C:\Users\brian\Documents\dpnm\15more\organized_files"
+tracker_file_path = r"C:\Users\brian\Documents\dpnm\15more\file_tracker.csv"
+generate_file_tracker(output_folder, tracker_file_path)
